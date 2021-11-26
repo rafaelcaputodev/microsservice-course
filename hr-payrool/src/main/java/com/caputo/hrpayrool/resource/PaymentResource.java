@@ -2,6 +2,7 @@ package com.caputo.hrpayrool.resource;
 
 import com.caputo.hrpayrool.entities.Payment;
 import com.caputo.hrpayrool.services.PaymentService;
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,9 +17,15 @@ public class PaymentResource {
     @Autowired
     public PaymentService paymentService;
 
+    @HystrixCommand(fallbackMethod = "getPaymentAlternative")
     @GetMapping(value = "/{workerId}/days/{days}")
-    public ResponseEntity<Payment> findById(@PathVariable Long workerId, @PathVariable Integer days){
+    public ResponseEntity<Payment> getPayment(@PathVariable Long workerId, @PathVariable Integer days){
         Payment payment = paymentService.getPayment(workerId, days);
+        return ResponseEntity.ok(payment);
+    }
+
+    public ResponseEntity<Payment> getPaymentAlternative(Long workerId, Integer days){
+        Payment payment = new Payment("Brann", 400.00, days);
         return ResponseEntity.ok(payment);
     }
 }
